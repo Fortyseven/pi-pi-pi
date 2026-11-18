@@ -9,7 +9,9 @@
     {@const title =
       S.projectName(t.cwd) + '\n' + (t.cwd || '—') + '\n' + t.key + '\n' + st.label}
     <div class="tab" class:active={S.activeTab && S.activeTab.key === t.key} {title}
-         onclick={() => S.switchTab(t.key)}>
+         onclick={() => S.switchTab(t.key)}
+         onauxclick={(e) => { if (e.button === 1) { e.preventDefault(); S.closeTab(t.key); } }}
+         onmousedown={(e) => { if (e.button === 1) e.preventDefault(); }}>
       <span class="tab-dot" class:busy={st.dot === ' busy'} class:live={st.dot === ' live'}></span>
       <span class="tab-proj">{S.projectName(t.cwd)}</span>
       <span class="tab-title">{t.label || prettyId(t.key)}</span>
