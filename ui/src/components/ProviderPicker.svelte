@@ -50,7 +50,7 @@
 <style lang="scss">
   .overlay {
     position: fixed;
-    inset: 64px 0 0 0;
+    inset: 34px 0 0 0;
     background: var(--bg);
     z-index: 35;
     display: flex;

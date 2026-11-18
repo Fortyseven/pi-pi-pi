@@ -1,6 +1,7 @@
 <script>
     import { onMount } from "svelte";
     import Row from "./rows/Row.svelte";
+    import SessionTabs from "./SessionTabs.svelte";
     import { contextLabel } from "../lib/util.js";
     import { S } from "../lib/state.svelte.js";
 
@@ -30,6 +31,7 @@
 </script>
 
 <main>
+    <SessionTabs />
     {#if S.loadMore.on}
         <div class="load-more">
             <button
@@ -451,10 +453,10 @@
         }
     }
 
-    /* no-session state */
+    /* no-session state (top offset = session-tab strip height) */
     .empty-state {
         position: absolute;
-        inset: 64px 0 0 0;
+        inset: 30px 0 0 0;
         display: flex;
         flex-direction: column;
         align-items: center;

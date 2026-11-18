@@ -2,7 +2,6 @@
   import { onMount } from 'svelte';
   import { S } from './lib/state.svelte.js';
   import TopBar from './components/TopBar.svelte';
-  import SessionTabs from './components/SessionTabs.svelte';
   import SettingsModal from './components/SettingsModal.svelte';
   import Sidebar from './components/Sidebar.svelte';
   import PanelGrip from './components/PanelGrip.svelte';
@@ -20,7 +19,6 @@
 <div class="deck" class:no-subs={S.subsHidden}
      style="--sidebar-w: {S.sidebarW}px; --right-w: {S.rightW}px">
   <TopBar />
-  <SessionTabs />
   <SettingsModal />
   <Sidebar />
   <PanelGrip side="left" />

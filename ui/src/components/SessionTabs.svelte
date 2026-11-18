@@ -23,7 +23,8 @@
 
 <style lang="scss">
   .tabs {
-    grid-column: 1 / -1;
+    flex: none;
+    min-height: 30px;
     display: flex;
     align-items: stretch;
     overflow-x: auto;

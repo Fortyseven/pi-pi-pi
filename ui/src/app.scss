@@ -9,11 +9,13 @@
     --panel: #1A1A1A;
     --line: #000;
     --line-soft: #ffbb0058;
-    --fg: #E0E0E0;
-    --dim: #E0E0E0;
+    --fg-lighter: #FFFFFF;
+    --fg: #DDD;
+    --dim: #AAA;
     --mute: #FFBB00;
     --code-bg: #000;
     --accent: #FFBB00;
+    --thinking: #09d;
     --ok: #55FF55;
     --warn: #e3b341;
     --err: #FF5555;
@@ -62,7 +64,7 @@ body {
     --sidebar-w: 300px;
     --right-w: 340px;
     grid-template-columns: var(--sidebar-w) 6px 1fr 6px var(--right-w);
-    grid-template-rows: 34px 30px 1fr;
+    grid-template-rows: 34px 1fr;
 }
 
 .deck.no-subs {
@@ -87,9 +89,11 @@ body {
     background: transparent;
     touch-action: none;
     z-index: 1;
+
     &:hover {
         background: rgba(255, 187, 0, 0.12);
     }
+
     &.dragging {
         background: rgba(255, 187, 0, 0.25);
     }

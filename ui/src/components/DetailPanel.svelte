@@ -56,7 +56,7 @@
 <style lang="scss">
   .detail {
     position: fixed;
-    top: 64px;
+    top: 34px;
     left: var(--sidebar-w);
     right: var(--right-w);
     bottom: 0;
