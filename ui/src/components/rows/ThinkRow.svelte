@@ -12,6 +12,7 @@
     <button
         class="think-head"
         type="button"
+        title="Toggle thinking"
         onclick={() => (collapsed = !collapsed)}
     >
         💭 Hmm... {collapsed ? "▸" : "▾"}
@@ -23,8 +24,11 @@
     .think-body {
         color: var(--thinking);
         font-style: italic;
-        background-color: transparent;
+        background-color: #000018;
         font-size: 0.75em;
         line-height: 1.2;
+        padding: 0.5em 1em;
+        margin: 0.5em 0;
+        border-radius: 10px;
     }
 </style>
