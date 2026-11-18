@@ -52,6 +52,8 @@ const LS = {
     pane: "panel-pane",
     subsHidden: "subs-hidden",
     treeInit: "collapsed-initialized",
+    sidebarW: "sidebar-width",
+    rightW: "right-width",
 };
 
 const MAX_LIVE = 3; // live pi processes before LRU eviction kicks in
@@ -66,6 +68,8 @@ let diagSeq = 0; // stable key for the circular buffer S.rows
 
 const CATALOG_KEY = "catalog:pi-package";
 const LIMIT_PRESETS = [70, 75, 80, 85, 90, 95];
+/* Side-panel widths (px): built-in defaults + clamp range while dragging. */
+const PANEL_W = { left: 300, right: 340, min: 160, max: 560 };
 
 const MCP_PRESETS = {
     filesystem: {
@@ -242,6 +246,8 @@ export const S = $state({
     provLoading: false,
     subsHidden: false,
     fatalVisible: false,
+    sidebarW: 300,
+    rightW: 340,
 });
 
 /* Command palette data (kept out of S: contains closures and comments). */
@@ -4091,6 +4097,35 @@ function toggleSubs() {
     applySubsVisibility(!S.subsHidden);
 }
 
+/* ================= resizable side panels ================= */
+
+function clampPanelW(w) {
+    return Math.max(PANEL_W.min, Math.min(PANEL_W.max, Math.round(w)));
+}
+
+function setPanelW(side, w) {
+    if (side === "left") S.sidebarW = clampPanelW(w);
+    else S.rightW = clampPanelW(w);
+}
+
+function commitPanelW(side) {
+    const val = side === "left" ? S.sidebarW : S.rightW;
+    lsSet(side === "left" ? LS.sidebarW : LS.rightW, String(val));
+}
+
+// "0" means "not set": loadPanelW() treats 0 as the built-in default.
+function resetPanelW(side) {
+    if (side === "left") S.sidebarW = PANEL_W.left;
+    else S.rightW = PANEL_W.right;
+    lsSet(side === "left" ? LS.sidebarW : LS.rightW, "0");
+}
+
+// Persisted width < min (or 0/missing) falls back to the built-in default.
+function loadPanelW(key, fallback) {
+    const n = Number(lsGet(key, "0"));
+    return n >= PANEL_W.min ? clampPanelW(n) : fallback;
+}
+
 /* ================= fatal JS errors ================= */
 
 function showFatal(msg) {
@@ -4488,6 +4523,8 @@ function init() {
     attachListeners();
 
     applySubsVisibility(lsGet(LS.subsHidden, "0") === "1");
+    S.sidebarW = loadPanelW(LS.sidebarW, PANEL_W.left);
+    S.rightW = loadPanelW(LS.rightW, PANEL_W.right);
     switchPanel(lsGet(LS.pane, "subs"));
     setEmptyState(true, "nosession");
 
@@ -4693,6 +4730,9 @@ S.thinkSliderInput = thinkSliderInput;
 S.thinkSliderChange = thinkSliderChange;
 S.applySubsVisibility = applySubsVisibility;
 S.toggleSubs = toggleSubs;
+S.setPanelW = setPanelW;
+S.commitPanelW = commitPanelW;
+S.resetPanelW = resetPanelW;
 S.showFatal = showFatal;
 S.fatalDismiss = fatalDismiss;
 S.attachListeners = attachListeners;

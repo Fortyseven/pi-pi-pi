@@ -5,6 +5,7 @@
   import SessionTabs from './components/SessionTabs.svelte';
   import SettingsModal from './components/SettingsModal.svelte';
   import Sidebar from './components/Sidebar.svelte';
+  import PanelGrip from './components/PanelGrip.svelte';
   import MainView from './components/MainView.svelte';
   import RightPanel from './components/RightPanel.svelte';
   import DetailPanel from './components/DetailPanel.svelte';
@@ -16,12 +17,15 @@
   onMount(() => S.init());
 </script>
 
-<div class="deck" class:no-subs={S.subsHidden}>
+<div class="deck" class:no-subs={S.subsHidden}
+     style="--sidebar-w: {S.sidebarW}px; --right-w: {S.rightW}px">
   <TopBar />
   <SessionTabs />
   <SettingsModal />
   <Sidebar />
+  <PanelGrip side="left" />
   <MainView />
+  <PanelGrip side="right" />
   <RightPanel />
   <DetailPanel />
   <PkgsOverlay />

@@ -57,20 +57,47 @@ body {
 .deck {
     height: 100%;
     display: grid;
-    grid-template-columns: 300px 1fr 340px;
+    /* Panel widths: App.svelte binds these inline from S; the SCSS defaults
+     (300/340) only apply before hydration. 6px = resize grip columns. */
+    --sidebar-w: 300px;
+    --right-w: 340px;
+    grid-template-columns: var(--sidebar-w) 6px 1fr 6px var(--right-w);
     grid-template-rows: 34px 30px 1fr;
 }
 
 .deck.no-subs {
-    grid-template-columns: 300px 1fr;
+    grid-template-columns: var(--sidebar-w) 6px 1fr;
 
     section {
+        display: none;
+    }
+
+    .grip-right {
         display: none;
     }
 
     .detail {
         right: 0;
     }
+}
+
+/* ---------- panel resize grips ---------- */
+.grip {
+    cursor: col-resize;
+    background: transparent;
+    touch-action: none;
+    z-index: 1;
+    &:hover {
+        background: rgba(255, 187, 0, 0.12);
+    }
+    &.dragging {
+        background: rgba(255, 187, 0, 0.25);
+    }
+}
+
+body.resizing {
+    cursor: col-resize !important;
+    user-select: none;
 }
 
 /* ---------- buttons (shared) ---------- */

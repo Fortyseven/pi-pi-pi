@@ -57,8 +57,8 @@
   .detail {
     position: fixed;
     top: 64px;
-    left: 300px;
-    right: 340px;
+    left: var(--sidebar-w);
+    right: var(--right-w);
     bottom: 0;
     background: var(--bg);
     display: flex;
