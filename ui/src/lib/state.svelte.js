@@ -710,6 +710,121 @@ function extActivity(text, key) {
     scrollBottom();
 }
 
+/* ================= extension UI dialogs (extension_ui_request) ================= */
+
+const EXT_DIALOG_METHODS = { select: 1, confirm: 1, input: 1, editor: 1 };
+
+/**
+ * Route an extension_ui_request to the tab that owns the session.
+ * Dialog methods (select/confirm/input/editor) create an interactive row kept in
+ * the tab's localRows — the log is rebuilt from disk, so a dialog can stay pending
+ * while its tab is in the background. Fire-and-forget methods become ext rows.
+ */
+function handleExtUi(rec, sessionId) {
+    const t = S.tabs.find((x) => x.key === sessionId);
+    if (!t) return;
+    if (!EXT_DIALOG_METHODS[rec.method]) {
+        extRowFor(rec, sessionId, t);
+        return;
+    }
+    const row = {
+        id: nextId(),
+        kind: "dialog",
+        dialogId: rec.id,
+        sessionId,
+        method: rec.method,
+        title: rec.title || "",
+        message: rec.message || "",
+        options: [].concat(rec.options || []),
+        placeholder: rec.placeholder || "",
+        prefill: rec.prefill || "",
+        deadline: typeof rec.timeout === "number" ? Date.now() + rec.timeout : null,
+        state: "pending",
+        input: rec.method === "editor" ? rec.prefill || "" : "",
+        answerText: "",
+    };
+    // Sentinel text: can never match a persisted user message (restoreLocalRows).
+    const entry = {
+        key: sessionId,
+        text: "extdialog:" + (rec.id || row.id),
+        row,
+        state: "pending",
+    };
+    localRows(t).push(entry);
+    if (S.current && S.current.key === sessionId) {
+        S.rows.push(row);
+        scrollBottom();
+    }
+    // Agent auto-resolves when the request's timeout expires.
+    if (row.deadline)
+        setTimeout(() => {
+            if (row.state === "pending") {
+                row.state = "expired";
+                row.answerText = "expired — agent auto-resolved";
+            }
+        }, Math.max(0, rec.timeout));
+}
+
+/** Fire-and-forget ext row (notify/setStatus) owned by the given tab. */
+function extRowFor(rec, sessionId, t) {
+    const text = rec.method === "notify" ? rec.message : rec.statusText;
+    const key = rec.method === "setStatus" ? rec.statusKey || "status" : null;
+    const clean = stripAnsi(text || "");
+    if (!clean) return;
+    if (S.current && S.current.key === sessionId) {
+        extActivity(clean, key);
+        return;
+    }
+    // Background tab: dedupe by key within its own localRows.
+    if (key) {
+        const existing = localRows(t).find(
+            (e) => e.row && e.row.kind === "ext" && e.row.key === key,
+        );
+        if (existing) {
+            existing.row.text = clean;
+            return;
+        }
+    }
+    const row = { id: nextId(), kind: "ext", key: key || null, text: clean };
+    localRows(t).push({
+        key: sessionId,
+        text: "extrow:" + (key || row.id),
+        row,
+        state: "note",
+    });
+}
+
+/**
+ * Send the user's answer to a pending extension dialog.
+ * Deliberately NOT via sendCommand: the response must keep the dialog's own id
+ * (sendCommand overwrites it with a ui-N id) and must target the dialog's
+ * session, not the focused one.
+ */
+function dialogAnswer(row, payload) {
+    if (!row || row.state !== "pending" || !row.sessionId) return;
+    const resp = { type: "extension_ui_response", id: row.dialogId };
+    if (payload.cancelled) {
+        resp.cancelled = true;
+        row.state = "cancelled";
+        row.answerText = "dismissed";
+    } else if (row.method === "confirm") {
+        resp.confirmed = !!payload.confirmed;
+        row.state = "sent";
+        row.answerText = payload.confirmed ? "confirmed" : "denied";
+    } else {
+        resp.value = payload.value ?? "";
+        row.state = "sent";
+        row.answerText = String(payload.value ?? "");
+    }
+    inv("rpc_command", {
+        sessionId: row.sessionId,
+        payload: JSON.stringify(resp),
+    }).catch((e) => {
+        row.state = "error";
+        row.answerText = "send failed: " + e;
+    });
+}
+
 /** Build a tool card row and register it in the given store. */
 function cardRow(callId, name, args, store, timeMs) {
     const row = {
@@ -2425,6 +2540,12 @@ function restoreDraft(t) {
 
 /** Tab state: a running turn outranks the connection. */
 function tabState(t) {
+    if (
+        (t.localRows || []).some(
+            (e) => e.row && e.row.kind === "dialog" && e.row.state === "pending",
+        )
+    )
+        return { label: "needs input", dot: " busy" };
     if (t.working) return { label: "running", dot: " busy" };
     if (t.connected) return { label: "connected", dot: " live" };
     return { label: "read-only", dot: "" };
@@ -4161,6 +4282,18 @@ function attachListeners() {
             diagPush(line.slice(0, 160), "—", "raw");
         }
         if (!S.current || sessionId !== S.current.key) {
+            // Dialogs must reach the owning tab even in the background: the child
+            // blocks until the client sends extension_ui_response.
+            if (line.includes('"type":"extension_ui_request"')) {
+                let rec = null;
+                try {
+                    rec = JSON.parse(line);
+                } catch {
+                    return;
+                }
+                handleExtUi(rec, sessionId);
+                return;
+            }
             // The queue also changes in background tabs: without this the state would
             // never leave "queued" when coming back to the tab.
             if (line.includes('"type":"queue_update"')) {
@@ -4374,14 +4507,9 @@ function attachListeners() {
                 sendCommand({ type: "get_session_stats" });
                 break;
 
-            case "extension_ui_request": {
-                if (rec.method === "notify" && rec.message) {
-                    extActivity(rec.message, null);
-                } else if (rec.method === "setStatus" && rec.statusText) {
-                    extActivity(rec.statusText, rec.statusKey || "status");
-                }
+            case "extension_ui_request":
+                handleExtUi(rec, sessionId);
                 break;
-            }
 
             case "queue_update":
                 syncQueue(
@@ -4424,8 +4552,17 @@ function attachListeners() {
         setTurn(key, false);
         const dead = S.tabs.find((x) => x.key === key);
         if (dead)
-            for (const entry of dead.localRows || [])
+            for (const entry of dead.localRows || []) {
                 if (entry.state === "queued") markRow(entry, "cancelled");
+                else if (
+                    entry.row &&
+                    entry.row.kind === "dialog" &&
+                    entry.row.state === "pending"
+                ) {
+                    entry.row.state = "expired";
+                    entry.row.answerText = "session ended";
+                }
+            }
         pendingPromptRows.clear();
         updateProcCount();
         if (S.current && key === S.current.key) {
@@ -4608,6 +4745,7 @@ S.openChild = openChild;
 S.loadPkgs = loadPkgs;
 S.loadCatalog = loadCatalog;
 S.confirmOk = confirmOk;
+S.dialogAnswer = dialogAnswer;
 S.loadHooks = loadHooks;
 S.refreshHooksStatus = refreshHooksStatus;
 S.openProvPicker = openProvPicker;

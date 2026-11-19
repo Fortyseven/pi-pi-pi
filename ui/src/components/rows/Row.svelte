@@ -2,6 +2,7 @@
   import UserRow from './UserRow.svelte';
   import NoteRow from './NoteRow.svelte';
   import ExtRow from './ExtRow.svelte';
+  import ExtDialogRow from './ExtDialogRow.svelte';
   import MarkdownRow from './MarkdownRow.svelte';
   import ThinkRow from './ThinkRow.svelte';
   import ToolRow from './ToolRow.svelte';
@@ -15,6 +16,8 @@
   <NoteRow {row} />
 {:else if row.kind === 'ext'}
   <ExtRow {row} />
+{:else if row.kind === 'dialog'}
+  <ExtDialogRow {row} />
 {:else if row.kind === 'think'}
   <ThinkRow {row} />
 {:else if row.kind === 'tool'}
