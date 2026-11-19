@@ -66,41 +66,7 @@
     }
 }
 
-/* thinking block */
-.think-block {
-    margin: 0 0 12px;
-    border-left: 2px solid #2b3348;
-    padding-left: 10px;
 
-    .think-head {
-        background: none;
-        border: none;
-        color: var(--mute);
-        font-family: var(--font-ui);
-        font-size: calc(10.5px * var(--s-ui));
-        cursor: pointer;
-        padding: 0;
-
-        &:hover {
-            color: var(--dim);
-        }
-    }
-
-    .think-body {
-        margin: 4px 0 0;
-        font-family: var(--font-chat);
-        font-size: var(--fs-chat);
-        line-height: 1.55;
-        color: #7d879c;
-        white-space: pre-wrap;
-        max-height: 260px;
-        overflow: auto;
-    }
-
-    &.collapsed .think-body {
-        display: none;
-    }
-}
 
 /* tool cards */
 .tool-card {
