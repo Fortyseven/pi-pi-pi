@@ -58,6 +58,13 @@ No CI, no justfile, no linter/formatter config. `ui/dist/` and `*/target/` are g
   through the generic `rpc_command` passthrough (frontend sends ready JSON: `set_model`,
   `set_thinking_level`, `compact`, `fork`, …). Prompts always carry
   `streamingBehavior: "steer"` so they queue mid-run.
+  Extension UI sub-protocol (docs/rpc-extension-ui.md): dialog methods (`select`/`confirm`/
+  `input`/`editor`) arrive as `extension_ui_request` lines and render as interactive rows
+  (`ExtDialogRow`); the answer goes back as `extension_ui_response` — sent via `rpc_command`
+  directly (NOT `sendCommand`, which would clobber the dialog's `id`), targeting the dialog's
+  own session so background tabs can answer. Fire-and-forget methods (`notify`/`setStatus`/…) become
+  ext rows; dialogs keep the row in the tab's `localRows` so they survive tab switches.
+  ("extension UI dialogs" section of `state.svelte.js` + `handleExtUi`).
 - **Sessions on disk** (pi owns them; the app only reads, plus delete-to-trash):
     - `~/.pi/agent/sessions/<project-group>/<stem>.jsonl` — session history; `stem` = the session id used in `pi --session <path>`
     - `<stem>/<childId>/run-N/session.jsonl` — subagent child runs
