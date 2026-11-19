@@ -297,7 +297,7 @@
     .overlay {
         position: fixed;
         inset: 34px 0 0 0;
-        background: var(--bg);
+        background: var(--ui-bg);
         z-index: 35;
         display: flex;
         flex-direction: column;

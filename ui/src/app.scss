@@ -5,7 +5,8 @@
    ============================================================ */
 
 :root {
-    --bg: #151515;
+    --ui-bg: #1C1B1A;
+    --chat-bg: #020202;
     --panel: #1A1A1A;
     --line: #000;
     --line-soft: #ffbb0058;
@@ -14,14 +15,26 @@
     --dim: #AAA;
     --mute: #FFBB00;
     --tool: #FBFC;
-    --code: #FB0;
     --user: #f0f;
+
+    --code: orange;
     --code-bg: #000;
+
+    --accent-light: #ffdc7b;
     --accent: #FFBB00;
-    --thinking: #09d;
+    --accent-dark: #926b00;
+
+    --secondary-light: #78dbff;
+    --secondary: #00BBFF;
+    --secondary-dark: #09d;
+    --secondary-darker: rgb(0, 102, 145);
+
+    --thinking: var(--secondary-dark);
+
     --ok: #55FF55;
     --warn: #e3b341;
     --err: #FF5555;
+    --sidebar-title: #f00;
     --mono: 'JetBrainsMono Nerd Font', 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
     /* Font slots: ui chrome / chat messages / code blocks. applyFonts() in
      state.svelte.js overrides these from settings; defaults = built-in mono. */
@@ -49,7 +62,7 @@ body {
 
 body {
     margin: 0;
-    background: var(--bg);
+    background: var(--ui-bg);
     color: var(--fg);
     font: var(--fs-ui)/1.6 var(--font-ui);
     overflow: hidden;

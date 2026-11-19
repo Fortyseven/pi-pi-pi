@@ -441,6 +441,7 @@
 
     /* transcript */
     .log {
+        background-color: var(--chat-bg);
         flex: 1;
         overflow-y: auto;
         overflow-x: hidden;
@@ -463,7 +464,7 @@
         justify-content: center;
         gap: 10px;
         z-index: 5;
-        background: var(--bg);
+        background: var(--ui-bg);
         pointer-events: none;
         .es-title {
             font-family: var(--font-ui);
@@ -575,9 +576,10 @@
     /* composer */
     .composer {
         position: relative;
-        padding: 12px 32px 18px;
+        // padding: 12px 32px 18px;
+        padding-block-start: 10px;
         border-top: 1px solid var(--line);
-        background: var(--bg);
+        background: var(--ui-bg);
     }
 
     /* slash-command / Cmd-K palette */
@@ -651,11 +653,10 @@
     .composer-card {
         position: relative;
         width: 100%;
-        max-width: 820px;
         margin: 0 auto;
-        background: #12161f;
+        background: #000;
         border: 1px solid var(--line);
-        border-radius: 8px;
+        border-top: 4px solid var(--secondary);
         padding: 8px 10px 6px;
     }
     .composer-bar {
